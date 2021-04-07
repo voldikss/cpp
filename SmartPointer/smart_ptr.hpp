@@ -8,18 +8,18 @@ class unique_ptr {
   public:
     explicit unique_ptr(T* ptr = nullptr) : ptr_(ptr) {}
     unique_ptr(const unique_ptr&) = delete;
-    unique_ptr(unique_ptr&& other) { ptr_ = other.release(); }
+    unique_ptr(unique_ptr&& other) : ptr_(other.release()) {}
     template <typename U>
-    unique_ptr(unique_ptr<U>&& other) { ptr_ = other.release(); }
+    unique_ptr(unique_ptr<U>&& other) : ptr_(other.release()) {}
     unique_ptr& operator=(unique_ptr rhs) {
         // rhs 为构造的新对象，在rhs的构造过程中已将原来的 ptr_ 成员
         // 设为 nullptr 了。
         // 此处牵涉到右值引用的自动类型转换，rhs 的构造调用的是移动构
         // 造函数，即相当于 `unique_ptr rhs(std:: move(other))`
         // 而且有了这个则不用再写 `unique_ptr& operator=(const unique_ptr&) = delete`
-        //了因为有了 `unique_ptr(const unique_ptr&) = delete`，则在 rhs
-        //的构造过程中就已经保证了 `p2 = p1` 中 p1 只能为右值引用类型，
-        //太妙了
+        // 了因为有了 `unique_ptr(const unique_ptr&) = delete`，则在 rhs
+        // 的构造过程中就已经保证了 `p2 = p1` 中 p1 只能为右值引用类型，
+        // 太妙了
         rhs.swap(*this);
         return *this;
     }
@@ -80,8 +80,23 @@ class shared_ptr {
         }
     }
 
-    shared_ptr(const shared_ptr& other) {
+    shared_ptr(const shared_ptr& other) : ptr_(other.ptr_) {
+        if (ptr_) {
+            shared_count_ = other.shared_count_;
+            shared_count_->inc_count();
+        }
+    }
+
+    shared_ptr(shared_ptr&& other) {
         ptr_ = other.ptr_;
+        if (ptr_) {
+            shared_count_ = other.shared_count_;
+            other.release();
+        }
+    }
+
+    template <typename U>
+    shared_ptr(const shared_ptr<U>& other) : ptr_(other.ptr_) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             shared_count_->inc_count();
@@ -89,17 +104,7 @@ class shared_ptr {
     }
 
     template <typename U>
-    shared_ptr(const shared_ptr<U>& other) {
-        ptr_ = other.ptr_;
-        if (ptr_) {
-            shared_count_ = other.shared_count_;
-            shared_count_->inc_count();
-        }
-    }
-
-    template <typename U>
-    shared_ptr(shared_ptr<U>&& other) {
-        ptr_ = other.ptr_;
+    shared_ptr(shared_ptr<U>&& other) : ptr_(other.ptr_) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             other.ptr_ = nullptr;
@@ -107,14 +112,14 @@ class shared_ptr {
     }
 
     template <typename U>
-    shared_ptr(const shared_ptr<U>& other, T* ptr) {
-        ptr_ = ptr;
+    shared_ptr(const shared_ptr<U>& other, T* ptr) : ptr_(ptr) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             shared_count_->inc_count();
         }
     }
 
+    // 囊括了许多
     shared_ptr& operator=(shared_ptr rhs) {
         rhs.swap(*this);
         return *this;
@@ -129,6 +134,11 @@ class shared_ptr {
     void swap(shared_ptr& rhs) {
         std::swap(ptr_, rhs.ptr_);
         std::swap(shared_count_, rhs.shared_count_);
+    }
+
+    T* release() {
+        ptr_ = nullptr;
+        shared_count_ = nullptr;
     }
 
     long use_count() {
