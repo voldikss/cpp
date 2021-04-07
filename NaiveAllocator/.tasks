@@ -1,0 +1,7 @@
+[start]
+command=make
+cwd=$(VIM_INIHOME)
+output=terminal
+focus=1
+notify=echo
+save=2
