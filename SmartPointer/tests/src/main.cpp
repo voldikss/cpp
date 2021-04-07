@@ -1,4 +1,4 @@
-#include "smart_ptr.hpp"
+#include "SmartPointer.hpp"
 #include <cassert>
 #include <iostream>
 

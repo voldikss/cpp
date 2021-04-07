@@ -6,7 +6,7 @@ SmartPointer:
 	make
 
 test: SmartPointer
-	./build/tests/my_allocator_tests
+	./build/tests/SmartPointer_tests
 
 clean:
 	rm -rf ./build
