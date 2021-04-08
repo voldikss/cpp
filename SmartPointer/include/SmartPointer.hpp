@@ -91,7 +91,8 @@ class shared_ptr {
         ptr_ = other.ptr_;
         if (ptr_) {
             shared_count_ = other.shared_count_;
-            other.release();
+            other.ptr_ = nullptr;
+            other.shared_count_ = nullptr;
         }
     }
 
@@ -108,6 +109,7 @@ class shared_ptr {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             other.ptr_ = nullptr;
+            other.shared_count_ = nullptr;
         }
     }
 
@@ -134,11 +136,6 @@ class shared_ptr {
     void swap(shared_ptr& rhs) {
         std::swap(ptr_, rhs.ptr_);
         std::swap(shared_count_, rhs.shared_count_);
-    }
-
-    T* release() {
-        ptr_ = nullptr;
-        shared_count_ = nullptr;
     }
 
     long use_count() {
