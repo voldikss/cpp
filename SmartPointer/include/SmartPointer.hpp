@@ -47,13 +47,13 @@ class unique_ptr {
 class shared_count {
   public:
     shared_count() : count_(1) {}
-    void inc_count() {
+    void inc_count() noexcept {
         count_++;
     }
-    long dec_count() {
+    long dec_count() noexcept {
         return --count_;
     }
-    long get_count() const {
+    long get_count() const noexcept {
         return count_;
     }
 
@@ -87,7 +87,7 @@ class shared_ptr {
         }
     }
 
-    shared_ptr(shared_ptr&& other) {
+    shared_ptr(shared_ptr&& other) noexcept {
         ptr_ = other.ptr_;
         if (ptr_) {
             shared_count_ = other.shared_count_;
@@ -97,7 +97,7 @@ class shared_ptr {
     }
 
     template <typename U>
-    shared_ptr(const shared_ptr<U>& other) : ptr_(other.ptr_) {
+    shared_ptr(const shared_ptr<U>& other) noexcept : ptr_(other.ptr_) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             shared_count_->inc_count();
@@ -105,7 +105,7 @@ class shared_ptr {
     }
 
     template <typename U>
-    shared_ptr(shared_ptr<U>&& other) : ptr_(other.ptr_) {
+    shared_ptr(shared_ptr<U>&& other) noexcept : ptr_(other.ptr_) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             other.ptr_ = nullptr;
@@ -114,7 +114,7 @@ class shared_ptr {
     }
 
     template <typename U>
-    shared_ptr(const shared_ptr<U>& other, T* ptr) : ptr_(ptr) {
+    shared_ptr(const shared_ptr<U>& other, T* ptr) noexcept : ptr_(ptr) {
         if (ptr_) {
             shared_count_ = other.shared_count_;
             shared_count_->inc_count();
@@ -122,7 +122,7 @@ class shared_ptr {
     }
 
     // 囊括了许多
-    shared_ptr& operator=(shared_ptr rhs) {
+    shared_ptr& operator=(shared_ptr rhs) noexcept {
         rhs.swap(*this);
         return *this;
     }
