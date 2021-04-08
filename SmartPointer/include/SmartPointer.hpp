@@ -151,6 +151,12 @@ class shared_ptr {
     shared_count* shared_count_;
 };
 
+template <typename T>
+void swap(shared_ptr<T>& lhs, shared_ptr<T>& rhs) {
+    lhs.swap(rhs);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // lvalue ref
 template <typename U, typename V>
 shared_ptr<U> static_pointer_cast(const shared_ptr<V>& other) noexcept {
